@@ -95,5 +95,5 @@ def render_view_all_data():
         df = pd.read_csv("data/data.csv")
         st.write(df)
     except:
-        st.write("No data found plase provide the data inside data folder with data.csv format with header id,text,sentiment")
+        st.write("No data found plase provide the data inside data folder with data.csv format with header id,text,sentiment or you can do it with generate data feature")
     
