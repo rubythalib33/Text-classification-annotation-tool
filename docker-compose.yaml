@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  senal-anno:
+    image: senal-anno:latest
+    ports:
+      - 7474:5000
+    volumes:
+      - ./data:/app/data
