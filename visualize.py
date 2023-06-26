@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 
 from engine import sentiment_analysis, generate_data, extract_generated_data
 
@@ -94,6 +95,13 @@ def render_view_all_data():
     try:
         df = pd.read_csv("data/data.csv")
         st.write(df)
+
+        # Add download button
+        csv = df.to_csv(index=False)
+        b64 = base64.b64encode(csv.encode()).decode()
+        href = f'<a href="data:file/csv;base64,{b64}" download="data.csv">Download CSV File</a>'
+        st.markdown(href, unsafe_allow_html=True)
     except:
         st.write("No data found plase provide the data inside data folder with data.csv format with header id,text,sentiment or you can do it with generate data feature")
+
     
