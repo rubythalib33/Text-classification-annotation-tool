@@ -2,8 +2,13 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 from engine import sentiment_analysis, generate_data, extract_generated_data
+
+
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 # Render the header
 def render_header():
@@ -87,7 +92,71 @@ def render_generate_data():
 # Render the EDA page
 def render_eda():
     st.header("EDA Page")
-    # Add your exploratory data analysis logic here
+    df = pd.read_csv("data/data.csv")
+
+    # bar chart of balance of the data
+    st.markdown("### Balance of the data")
+    st.bar_chart(df["sentiment"].value_counts())
+
+    # word length distribution
+    st.markdown("### Word Length Distribution")
+    df["word_length"] = df["text"].apply(lambda x: len(x.split(" ")))
+    st.bar_chart(df["word_length"].value_counts())
+
+    sentiment_options = ["negative", "neutral", "positive"]
+    selected_sentiment = st.selectbox("Select Sentiment", sentiment_options)
+    df_selected = df[df["sentiment"] == selected_sentiment]
+
+    # word cloud
+    st.markdown("### Word Cloud")
+    wordcloud = WordCloud().generate(' '.join(df_selected["text"]))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    st.pyplot()
+
+    # word frequency on each sentiment
+    st.markdown("### Word Frequency")
+
+    frequency = {}
+    for text in df_selected["text"]:
+        for word in text.split(" "):
+            if word not in frequency:
+                frequency[word] = 1
+            else:
+                frequency[word] += 1
+    df_frequency = pd.DataFrame.from_dict(frequency, orient='index', columns=['frequency'])
+    df_frequency = df_frequency.sort_values(by=['frequency'], ascending=False)
+    st.bar_chart(df_frequency.head(10))
+
+    # bigram
+    st.markdown("### Bigram")
+    bigram_frequency = {}
+    for text in df_selected["text"]:
+        text = text.split(" ")
+        for i in range(len(text)-1):
+            bigram = text[i] + " " + text[i+1]
+            if bigram not in bigram_frequency:
+                bigram_frequency[bigram] = 1
+            else:
+                bigram_frequency[bigram] += 1
+    df_bigram_frequency = pd.DataFrame.from_dict(bigram_frequency, orient='index', columns=['frequency'])
+    df_bigram_frequency = df_bigram_frequency.sort_values(by=['frequency'], ascending=False)
+    st.bar_chart(df_bigram_frequency.head(10))
+
+    # trigram
+    st.markdown("### Trigram")
+    trigram_frequency = {}
+    for text in df_selected["text"]:
+        text = text.split(" ")
+        for i in range(len(text)-2):
+            trigram = text[i] + " " + text[i+1] + " " + text[i+2]
+            if trigram not in trigram_frequency:
+                trigram_frequency[trigram] = 1
+            else:
+                trigram_frequency[trigram] += 1
+    df_trigram_frequency = pd.DataFrame.from_dict(trigram_frequency, orient='index', columns=['frequency'])
+    df_trigram_frequency = df_trigram_frequency.sort_values(by=['frequency'], ascending=False)
+    st.bar_chart(df_trigram_frequency.head(10))
 
 # Render the View All Data page
 def render_view_all_data():
